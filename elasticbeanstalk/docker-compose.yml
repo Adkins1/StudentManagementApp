@@ -1,0 +1,7 @@
+version: "3.9"  # optional since v1.27.0
+services:
+  backend:
+    image: "adkins11111/springboot-react-fullstack:latest"
+    ports:
+      - "80:8081"
+    restart: "always"
