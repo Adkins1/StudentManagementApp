@@ -7,7 +7,10 @@ import {
   Breadcrumb, 
   Table,
   Spin,
-  Empty
+  Empty,
+  Button,
+  Tag,
+  Badge
 } from 'antd';
 import {
   DesktopOutlined,
@@ -16,15 +19,37 @@ import {
   TeamOutlined,
   UserOutlined,
   LoadingOutlined,
+  PlusOutlined,
 } from '@ant-design/icons';
+import StudentDrawerForm from './StudentDrawerForm';
+import Avatar from 'antd/lib/avatar/avatar';
 
-
+q
 function App() {
   const [students, setStudents] = useState([]);
   const [collapsed, setCollapsed] = useState(false);
   const [fetching, setFetching] = useState(true);
+  const [showDrawer, setShowDrawer] = useState(false);
+
+  const TheAvatar = ({name}) => {
+    let trim = name.trim();
+    if (trim.length === 0) {
+      return <Avatar icon={<UserOutlined/>}/>;
+    }
+    const split = trim.split(" ");
+    if(split.length === 1){
+      return <Avatar>{name.charAt(0)}</Avatar>;
+    }
+    return <Avatar>{`${name.charAt(0)}${name.charAt(name.length-1)}`}</Avatar>;
+  };
 
   const columns = [
+    {
+      title: '',
+      dataIndex: 'avatar',
+      key: 'avatar',
+      render: (text, student) => <TheAvatar name={student.name}/>
+    },
     {
       title: 'Id',
       dataIndex: 'id',
@@ -57,7 +82,6 @@ function App() {
       })
 
   useEffect(() => {
-    console.log("component is mounted");
     fetchStudents();
   }, []);
 
@@ -68,15 +92,33 @@ function App() {
     if(students.length <= 0) {
       return <Empty/>;
     }
-    return <Table
+    return <>
+    <StudentDrawerForm 
+      setShowDrawer={setShowDrawer}
+      showDrawer={showDrawer}
+      fetchStudents={fetchStudents}
+      />
+    <Table
             dataSource={students}
             columns={columns}
             bordered
-            title = { () => 'Students' }
+            title = { () =><>
+              <Tag>Number of students</Tag>
+              <Badge count={students.length} className="site-badge-count-4"/>
+              <Button 
+                type="primary" 
+                shape="round" 
+                icon={<PlusOutlined/>}
+                onClick={()=>setShowDrawer(!showDrawer)}>
+                  Add New Student
+              </Button> 
+              </>
+            }
             pagination = {{ pageSize : 50 }}
-            scroll = {{ y: 240 }}
+            scroll = {{ y: 400 }}
             rowKey={(student) => student.id}
             />
+    </>
   }
 
   const { Header, Content, Footer, Sider } = Layout;

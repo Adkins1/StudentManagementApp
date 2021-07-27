@@ -1,9 +1,9 @@
 package com.students.management.StudentManagementApp.student;
 
 import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +19,12 @@ public class StudentController {
     public List<Student> getAllStudents(){
 
         return studentService.getAllStudents();
+    }
+    @PostMapping
+    public ResponseEntity<Student> addStudent(@RequestBody Student student){
+        //ResponseEntity zwraca statusy http - created zwraca 201 zamiast default 200
+        studentService.addStudent(student);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 }
