@@ -1,16 +1,17 @@
 import './App.css';
 import { useState, useEffect } from 'react';
-import { getAllStudents } from './client';
+import { getAllStudents, deleteStudent } from './client';
 import { 
   Layout,
   Menu, 
   Breadcrumb, 
   Table,
   Spin,
-  Empty,
   Button,
   Tag,
-  Badge
+  Badge,
+  Popconfirm, 
+  message
 } from 'antd';
 import {
   DesktopOutlined,
@@ -23,8 +24,8 @@ import {
 } from '@ant-design/icons';
 import StudentDrawerForm from './StudentDrawerForm';
 import Avatar from 'antd/lib/avatar/avatar';
+import { errorNotification } from './Notification';
 
-q
 function App() {
   const [students, setStudents] = useState([]);
   const [collapsed, setCollapsed] = useState(false);
@@ -42,6 +43,22 @@ function App() {
     }
     return <Avatar>{`${name.charAt(0)}${name.charAt(name.length-1)}`}</Avatar>;
   };
+
+  const onDelete = student => {
+    deleteStudent(student)
+    .then(() => {
+      fetchStudents();
+      message.info('Deleted: ' + student.name);
+    })
+    .catch(err => {
+      err.response.json().then(res => {
+        errorNotification(
+          "There was an issue",
+          `${res.message} [statusCode:${res.status}] [${res.error}]`
+        )
+      });
+    });
+  }
 
   const columns = [
     {
@@ -70,16 +87,45 @@ function App() {
       dataIndex: 'gender',
       key: 'gender',
     },
+    {
+      title: 'Actions',
+      dataIndex: 'actions',
+      key: 'actions',
+      render: (text, student) => (
+        <>
+          <Button onClick={() => console.log(JSON.parse(student.id))} type="primary">Edit</Button>
+          <Popconfirm
+            placement="topRight"
+            title="Are you sure to delete this Student?"
+            onConfirm={() => onDelete(student)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="primary">Delete</Button>
+          </Popconfirm>
+        </>
+      )
+    }
   ];
 
-  const fetchStudents = () =>
+  const fetchStudents = () => {
     getAllStudents()
       .then(res => res.json())
       .then(data => {
-        console.log(data);
         setStudents(data);
         setFetching(false);
       })
+      .catch(err => {
+        console.log(err.reponse)
+        err.response.json().then(res => {
+          errorNotification(
+            "There was an issue",
+            `${res.message} [statusCode:${res.status}] [${res.error}]`
+          )
+        })
+      })
+      .finally( ()=> setFetching(false));
+    }
 
   useEffect(() => {
     fetchStudents();
@@ -90,7 +136,28 @@ function App() {
       return <Spin indicator={antIcon} />;
     }
     if(students.length <= 0) {
-      return <Empty/>;
+      return <>
+      <StudentDrawerForm 
+        setShowDrawer={setShowDrawer}
+        showDrawer={showDrawer}
+        fetchStudents={fetchStudents}
+      />
+      <Table
+            dataSource={students}
+            columns={columns}
+            bordered
+            title = { () =><>
+              <Button 
+                type="primary" 
+                shape="round" 
+                icon={<PlusOutlined/>}
+                onClick={()=>setShowDrawer(!showDrawer)}>
+                  Add New Student
+              </Button> 
+              </>
+            }
+        />
+    </>
     }
     return <>
     <StudentDrawerForm 

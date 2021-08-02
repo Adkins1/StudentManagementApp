@@ -1,5 +1,5 @@
 import { Drawer, Input, Col, Select, Form, Row, Button, Spin } from 'antd';
-import { addNewStudent } from './client';
+import { editStudent } from './client';
 import { LoadingOutlined } from '@ant-design/icons';
 import { useState } from 'react';
 import { successNotification, errorNotification } from './Notification';
@@ -11,26 +11,23 @@ function StudentDrawerForm({ showDrawer, setShowDrawer, fetchStudents }) {
     const onCLose = () => setShowDrawer(false);
     const [submitting, setSubmitting] = useState(false);
 
-    const onFinish = values => {
+    const onFinish = student => {
         setSubmitting(true);
-        addNewStudent(values)
+        editStudent(student)
             .then(()=> {
                 setShowDrawer(false);
                 successNotification(
-                    "Added succesfully",
-                    `${values.name} was added to the system`,
+                    "Updated succesfully",
+                    `${student.name} was updated in the system`,
                 );
                 fetchStudents();
-            })
-            .catch(err => {
-                err.response.json().then(res => {
-                    errorNotification(
-                        "There was an issue",
-                        `${res.message} [statusCode:${res.status}] [${res.error}]`,
-                   );
-                });
-            })
-            .finally(()=>{
+            }).catch(err => {
+                console.log(err);
+                errorNotification(
+                    "Failed to edit",
+                    {err},
+                );
+            }).finally(()=>{
                 setSubmitting(false);
             });
     };
@@ -40,7 +37,7 @@ function StudentDrawerForm({ showDrawer, setShowDrawer, fetchStudents }) {
     };
 
     return <Drawer
-        title="Create new student"
+        title="Edit existing student"
         width={720}
         onClose={onCLose}
         visible={showDrawer}
@@ -67,8 +64,10 @@ function StudentDrawerForm({ showDrawer, setShowDrawer, fetchStudents }) {
                         name="name"
                         label="Name"
                         rules={[{ required: true, message: 'Please enter student name' }]}
+                        value={student.name}
                     >
                         <Input placeholder="Please enter student name" />
+
                     </Form.Item>
                 </Col>
                 <Col span={12}>
@@ -76,6 +75,7 @@ function StudentDrawerForm({ showDrawer, setShowDrawer, fetchStudents }) {
                         name="email"
                         label="Email"
                         rules={[{ required: true, message: 'Please enter student email' }]}
+                        value={student.email}
                     >
                         <Input placeholder="Please enter student email" />
                     </Form.Item>
@@ -87,6 +87,7 @@ function StudentDrawerForm({ showDrawer, setShowDrawer, fetchStudents }) {
                         name="gender"
                         label="gender"
                         rules={[{ required: true, message: 'Please select a gender' }]}
+                        value={student.gender}
                     >
                         <Select placeholder="Please select a gender">
                             <Option value="MALE">MALE</Option>
